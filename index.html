@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ChemCraft: The Octet Forge</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <meta name="description" content="A hex-grid puzzle game for KSSM Form 4 Chemistry, Chapter 5: Chemical Bond. English and Bahasa Melayu.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <!-- ============================================================ TOP BAR -->
+  <header class="topbar">
+    <p class="topbar-brand" aria-hidden="true"><span class="brand-hex"></span><span data-i18n="app.name">ChemCraft</span></p>
+
+    <div class="topbar-controls">
+      <div class="lang-toggle" role="group" data-i18n-attr="aria-label:lang.label">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="bm" aria-pressed="false">BM</button>
+      </div>
+
+      <button type="button" class="icon-btn" id="btn-music" aria-pressed="true" data-i18n-attr="aria-label:audio.music">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /><path class="off-slash" d="M3 3l18 18" /></svg>
+      </button>
+      <button type="button" class="icon-btn" id="btn-sfx" aria-pressed="true" data-i18n-attr="aria-label:audio.sfx">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="on-wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /><path class="off-slash" d="M3 3l18 18" /></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="screens">
+    <!-- ============================================================ MENU -->
+    <section class="screen menu" data-screen="menu" aria-labelledby="menu-title">
+      <div class="menu-hero">
+        <div class="menu-copy">
+          <p class="eyebrow" data-i18n="app.chapter"></p>
+          <h1 class="wordmark" id="menu-title" tabindex="-1" data-autofocus>
+            <span class="wordmark-main" data-i18n="app.name">ChemCraft</span>
+            <span class="wordmark-sub" data-i18n="app.subtitle">The Octet Forge</span>
+          </h1>
+          <p class="tagline" data-i18n="app.tagline"></p>
+
+          <div class="menu-actions">
+            <button type="button" class="btn btn-primary btn-lg" id="btn-play"><span id="btn-play-label">Play</span></button>
+            <button type="button" class="btn btn-lg" id="btn-levels" data-i18n="menu.levels"></button>
+            <button type="button" class="btn btn-lg" id="btn-notes" data-i18n="menu.notes"></button>
+          </div>
+
+          <div class="menu-progress">
+            <div class="progress-bar" id="menu-progress-bar" aria-hidden="true"><span></span></div>
+            <p id="menu-progress"></p>
+            <button type="button" class="btn-link" id="btn-reset" data-i18n="menu.reset"></button>
+          </div>
+        </div>
+
+        <!-- Live miniature of the core mechanic: Na hands its electron to Cl. -->
+        <figure class="hero-demo" aria-hidden="true">
+          <div class="demo-hex demo-na"><span>Na</span><small>2.8.1</small></div>
+          <div class="demo-hex demo-cl"><span>Cl</span><small>2.8.7</small></div>
+          <span class="demo-slot"></span>
+          <span class="demo-e"></span>
+          <figcaption class="demo-caption">Na → Na<sup>+</sup> + e<sup>−</sup> &nbsp;·&nbsp; Cl + e<sup>−</sup> → Cl<sup>−</sup></figcaption>
+        </figure>
+      </div>
+
+      <section class="how" aria-labelledby="how-title">
+        <h2 id="how-title" data-i18n="menu.howTitle"></h2>
+        <ol class="how-steps">
+          <li data-i18n="menu.how1"></li>
+          <li data-i18n="menu.how2"></li>
+          <li data-i18n="menu.how3"></li>
+        </ol>
+      </section>
+    </section>
+
+    <!-- ============================================================ LEVELS -->
+    <section class="screen levels" id="levels-screen" data-screen="levels" aria-labelledby="levels-title" hidden>
+      <div class="screen-head">
+        <button type="button" class="btn btn-ghost" data-go="menu"><span aria-hidden="true">←</span> <span data-i18n="common.back"></span></button>
+        <h1 id="levels-title" tabindex="-1" data-autofocus data-i18n="levels.title"></h1>
+      </div>
+      <ol class="level-list" id="level-list"></ol>
+    </section>
+
+    <!-- ============================================================ NOTES -->
+    <section class="screen notes" data-screen="notes" aria-labelledby="notes-title" hidden>
+      <div class="screen-head">
+        <button type="button" class="btn btn-ghost" data-go="menu"><span aria-hidden="true">←</span> <span data-i18n="common.back"></span></button>
+        <h1 id="notes-title" tabindex="-1" data-autofocus data-i18n="notes.title"></h1>
+      </div>
+      <div class="notes-layout" id="notes-content"></div>
+    </section>
+
+    <!-- ============================================================ GAME -->
+    <section class="screen game" data-screen="game" aria-labelledby="hud-title" hidden>
+      <header class="hud-head">
+        <button type="button" class="btn btn-ghost" id="btn-game-menu"><span aria-hidden="true">←</span> <span data-i18n="game.menu"></span></button>
+        <div class="hud-titles">
+          <div class="hud-meta"><span id="hud-level"></span><h1 id="hud-title" tabindex="-1" data-autofocus></h1><span id="hud-bond" class="bond-pill"></span></div>
+          <p class="hud-instruction" data-i18n="game.instruction"></p>
+          <p class="hud-equation" id="hud-equation"></p>
+        </div>
+        <button type="button" class="btn" id="btn-hint">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></svg>
+          <span data-i18n="game.hint"></span>
+        </button>
+      </header>
+
+      <aside class="panel objectives" aria-labelledby="obj-title">
+        <h2 id="obj-title" data-i18n="game.objectives"></h2>
+        <ul class="objective-list">
+          <li class="objective" id="obj-cation" role="checkbox" aria-readonly="true" aria-checked="false"><span class="check" aria-hidden="true"></span><span id="obj-cation-text"></span></li>
+          <li class="objective" id="obj-anion" role="checkbox" aria-readonly="true" aria-checked="false"><span class="check" aria-hidden="true"></span><span id="obj-anion-text"></span></li>
+          <li class="objective" id="obj-formula" role="checkbox" aria-readonly="true" aria-checked="false"><span class="check" aria-hidden="true"></span><span id="obj-formula-text"></span></li>
+        </ul>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-clear" data-i18n="game.clear"></button>
+      </aside>
+
+      <div class="board-wrap">
+        <div class="board-stage" id="board-stage">
+          <svg class="board-svg" id="board-svg" aria-hidden="true"></svg>
+          <div class="tile-layer" id="tile-layer"></div>
+        </div>
+      </div>
+
+      <aside class="panel stability" aria-labelledby="stability-title">
+        <h2 id="stability-title" data-i18n="game.stability"></h2>
+        <div class="ring" id="stability-ring">
+          <div id="stability-meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="stability-title">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track" cx="60" cy="60" r="50" />
+              <circle class="ring-fill" cx="60" cy="60" r="50" pathLength="100" />
+            </svg>
+            <span class="ring-value" id="stability-value">0%</span>
+          </div>
+        </div>
+      </aside>
+
+      <div class="tray-wrap">
+        <p class="tray-help" data-i18n="game.trayHelp"></p>
+        <div class="tray" id="tray" role="group" data-i18n-attr="aria-label:game.tray"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Tile being dragged lives here, above everything. -->
+  <div class="drag-layer" id="drag-layer" aria-hidden="true"></div>
+
+  <!-- ============================================================ HINT MODAL -->
+  <div class="modal" id="hint-modal" role="dialog" aria-modal="true" aria-labelledby="hint-title" hidden>
+    <div class="modal-card hint-card">
+      <header class="modal-head">
+        <h2 id="hint-title" data-i18n="hint.title"></h2>
+        <button type="button" class="icon-btn" id="hint-close" data-i18n-attr="aria-label:common.close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </header>
+      <div class="tabs" role="tablist" id="hint-tabs">
+        <button type="button" role="tab" id="tab-level" aria-controls="hint-level" aria-selected="true" data-i18n="hint.tabLevel"></button>
+        <button type="button" role="tab" id="tab-rules" aria-controls="hint-rules" aria-selected="false" tabindex="-1" data-i18n="hint.tabRules"></button>
+        <button type="button" role="tab" id="tab-notes" aria-controls="hint-notes-panel" aria-selected="false" tabindex="-1" data-i18n="hint.tabNotes"></button>
+      </div>
+      <div class="tab-panels">
+        <div role="tabpanel" id="hint-level" aria-labelledby="tab-level" tabindex="0"></div>
+        <div role="tabpanel" id="hint-rules" aria-labelledby="tab-rules" tabindex="0" hidden></div>
+        <div role="tabpanel" id="hint-notes-panel" aria-labelledby="tab-notes" tabindex="0" hidden>
+          <div class="notes-layout is-compact" id="hint-notes"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ SYNTHESIS POPUP -->
+  <div class="modal" id="synth-modal" role="dialog" aria-modal="true" aria-labelledby="synth-title" hidden>
+    <div class="modal-card synth-card">
+      <header class="synth-head">
+        <p class="eyebrow" id="synth-type"></p>
+        <h2 id="synth-title"></h2>
+        <ol class="synth-dots" id="synth-dots"></ol>
+      </header>
+      <div class="synth-stage" id="synth-stage" aria-live="polite"></div>
+      <footer class="synth-foot">
+        <button type="button" class="btn btn-ghost" id="synth-prev" data-i18n="synth.prev"></button>
+        <span class="synth-count" id="synth-count"></span>
+        <button type="button" class="btn btn-ghost" id="synth-replay" data-i18n="synth.replay"></button>
+        <button type="button" class="btn btn-primary" id="synth-next" data-i18n="synth.next"></button>
+        <div class="synth-finale" id="synth-finale" hidden>
+          <p class="synth-all-done" id="synth-all-done" data-i18n="synth.allDone" hidden></p>
+          <button type="button" class="btn" id="synth-menu" data-i18n="synth.menu"></button>
+          <button type="button" class="btn" id="synth-again" data-i18n="synth.again"></button>
+          <button type="button" class="btn btn-primary" id="synth-next-level" data-i18n="synth.nextLevel"></button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <div class="visually-hidden" id="live" aria-live="polite"></div>
+</body>
+</html>
