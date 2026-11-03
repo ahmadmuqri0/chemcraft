@@ -11,29 +11,46 @@
  * first click/tap. Mute and music preferences are remembered between visits.
  */
 
-import { load, save } from './storage.js';
+import { load, save } from "./storage.js";
 
 export const DEFAULT_TRACKS = Object.freeze({
-  bgm: './audio/bgm.mp3',
+  bgm: "./audio/bgm.mp3",
   sfx: {
-    click: './audio/click.mp3',     // any button
-    pickup: './audio/pickup.mp3',   // tile lifted
-    snap: './audio/snap.mp3',       // tile snapped onto a cell
-    bond: './audio/bond.mp3',       // a group becomes stable
-    error: './audio/error.mp3',     // invalid drop / wrong compound
-    success: './audio/success.mp3', // level complete
-    step: './audio/step.mp3',       // next step in the synthesis popup
+    click: "./audio/click.mp3", // any button
+    pickup: "./audio/pickup.mp3", // tile lifted
+    snap: "./audio/snap.mp3", // tile snapped onto a cell
+    bond: "./audio/bond.mp3", // a group becomes stable
+    error: "./audio/error.mp3", // invalid drop / wrong compound
+    success: "./audio/success.mp3", // level complete
+    step: "./audio/step.mp3", // next step in the synthesis popup
   },
 });
 
 /** Fallback tones: [frequency Hz, duration s] notes played in sequence. */
 const FALLBACK_TONES = {
   click: [[880, 0.04]],
-  pickup: [[520, 0.05], [700, 0.05]],
-  snap: [[660, 0.05], [990, 0.07]],
-  bond: [[740, 0.08], [988, 0.12]],
-  error: [[220, 0.12], [180, 0.14]],
-  success: [[523, 0.1], [659, 0.1], [784, 0.1], [1047, 0.22]],
+  pickup: [
+    [520, 0.05],
+    [700, 0.05],
+  ],
+  snap: [
+    [660, 0.05],
+    [990, 0.07],
+  ],
+  bond: [
+    [740, 0.08],
+    [988, 0.12],
+  ],
+  error: [
+    [220, 0.12],
+    [180, 0.14],
+  ],
+  success: [
+    [523, 0.1],
+    [659, 0.1],
+    [784, 0.1],
+    [1047, 0.22],
+  ],
   step: [[784, 0.06]],
 };
 
@@ -42,29 +59,29 @@ export class AudioManager {
    * @param {object} [tracks] { bgm: path, sfx: { name: path } }
    */
   constructor(tracks = DEFAULT_TRACKS) {
-    this.musicEnabled = load('audio.music', true);
-    this.sfxEnabled = load('audio.sfx', true);
-    this.musicVolume = load('audio.musicVolume', 0.45);
-    this.sfxVolume = load('audio.sfxVolume', 0.8);
+    this.musicEnabled = load("audio.music", true);
+    this.sfxEnabled = load("audio.sfx", true);
+    this.musicVolume = load("audio.musicVolume", 0.45);
+    this.sfxVolume = load("audio.sfxVolume", 0.8);
     this.unlocked = false;
-    this.missing = new Set();          // names whose files failed to load
+    this.missing = new Set(); // names whose files failed to load
     this.listeners = new Set();
-    this.context = null;               // Web Audio context for fallback tones
+    this.context = null; // Web Audio context for fallback tones
 
     // Background music: one looping element.
     this.bgm = new Audio();
     this.bgm.loop = true;
-    this.bgm.preload = 'auto';
+    this.bgm.preload = "auto";
     this.bgm.volume = this.musicVolume;
-    this.bgm.addEventListener('error', () => this.missing.add('bgm'));
+    this.bgm.addEventListener("error", () => this.missing.add("bgm"));
     this.bgm.src = tracks.bgm;
 
     // Sound effects: one template element each, cloned on play so they can overlap.
     this.sfx = new Map();
     for (const [name, src] of Object.entries(tracks.sfx)) {
       const el = new Audio();
-      el.preload = 'auto';
-      el.addEventListener('error', () => this.missing.add(name));
+      el.preload = "auto";
+      el.addEventListener("error", () => this.missing.add(name));
       el.src = src;
       this.sfx.set(name, el);
     }
@@ -82,8 +99,8 @@ export class AudioManager {
   // ------------------------------------------------------------- music
 
   playBgm() {
-    if (!this.unlocked || !this.musicEnabled || this.missing.has('bgm')) return;
-    this.bgm.play().catch(() => this.missing.add('bgm'));
+    if (!this.unlocked || !this.musicEnabled || this.missing.has("bgm")) return;
+    this.bgm.play().catch(() => this.missing.add("bgm"));
   }
 
   pauseBgm() {
@@ -92,9 +109,10 @@ export class AudioManager {
 
   /** Turns music on/off and remembers the choice. Returns the new state. */
   toggleMusic(force) {
-    this.musicEnabled = typeof force === 'boolean' ? force : !this.musicEnabled;
-    save('audio.music', this.musicEnabled);
-    if (this.musicEnabled) this.playBgm(); else this.pauseBgm();
+    this.musicEnabled = typeof force === "boolean" ? force : !this.musicEnabled;
+    save("audio.music", this.musicEnabled);
+    if (this.musicEnabled) this.playBgm();
+    else this.pauseBgm();
     this.emit();
     return this.musicEnabled;
   }
@@ -119,8 +137,8 @@ export class AudioManager {
 
   /** Turns effects on/off and remembers the choice. Returns the new state. */
   toggleSfx(force) {
-    this.sfxEnabled = typeof force === 'boolean' ? force : !this.sfxEnabled;
-    save('audio.sfx', this.sfxEnabled);
+    this.sfxEnabled = typeof force === "boolean" ? force : !this.sfxEnabled;
+    save("audio.sfx", this.sfxEnabled);
     this.emit();
     return this.sfxEnabled;
   }
@@ -142,13 +160,13 @@ export class AudioManager {
   /** Sets a channel volume from 0 to 1 ('music' or 'sfx'). */
   setVolume(channel, value) {
     const v = Math.min(1, Math.max(0, value));
-    if (channel === 'music') {
+    if (channel === "music") {
       this.musicVolume = v;
       this.bgm.volume = v;
-      save('audio.musicVolume', v);
+      save("audio.musicVolume", v);
     } else {
       this.sfxVolume = v;
-      save('audio.sfxVolume', v);
+      save("audio.sfxVolume", v);
     }
     this.emit();
   }
@@ -162,7 +180,9 @@ export class AudioManager {
   }
 
   emit() {
-    this.listeners.forEach((fn) => fn(this));
+    this.listeners.forEach((fn) => {
+      fn(this);
+    });
   }
 
   // ------------------------------------------------------------- fallback synth
@@ -178,10 +198,13 @@ export class AudioManager {
       for (const [freq, dur] of notes) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = name === 'error' ? 'sawtooth' : 'triangle';
+        osc.type = name === "error" ? "sawtooth" : "triangle";
         osc.frequency.value = freq;
         gain.gain.setValueAtTime(0.0001, start);
-        gain.gain.exponentialRampToValueAtTime(0.18 * this.sfxVolume, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(
+          0.18 * this.sfxVolume,
+          start + 0.01,
+        );
         gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
         osc.connect(gain).connect(ctx.destination);
         osc.start(start);
