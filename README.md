@@ -3,8 +3,10 @@
 Vanilla HTML/CSS/JS, no frameworks, no build step. Uses ES modules, so open it
 through a local web server (double-clicking index.html will not load the modules):
 
-    cd chemcraft
-    python3 -m http.server 8000      # then open http://localhost:8000
+```bash
+cd chemcraft
+python3 -m http.server 8000      # then open http://localhost:8000
+```
 
 Or use the VS Code "Live Server" extension.
 
